@@ -6,12 +6,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 
@@ -19,20 +19,22 @@ public class MainClass {
 	
 	public static void main(String[] args) throws FileNotFoundException, NumberFormatException, ParseException{
         
-		File plik = new File("txt/lotto.txt");
+		File plik;
 		Scanner odczyt;
-		StringTokenizer token;
+		StringTokenizer token;		
+		List<Losowanie> wynikiLista;			
+		SimpleDateFormat formatter;
 		int j=0;
 		
-		List<Losowanie> wynikiLista = new ArrayList<Losowanie>();				
-		SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
-		
 		try {
+			plik = new File("txt/lotto.txt");
+			wynikiLista = new ArrayList<Losowanie>();
+			formatter = new SimpleDateFormat("dd-MM-yyyy");
 			odczyt = new Scanner(plik);
 			
 			while(odczyt.hasNextLine()) {
 				
-				token = new StringTokenizer (odczyt.nextLine(),"	");
+				token = new StringTokenizer (odczyt.nextLine(),"\t");
 				while(token.hasMoreElements()) {
 					wynikiLista.add(new Losowanie(Integer.parseInt(token.nextToken()), formatter.format(formatter.parse(token.nextToken()))));
 					
@@ -40,21 +42,19 @@ public class MainClass {
 						wynikiLista.get(j).dodajLiczbe(Integer.parseInt(token.nextToken()));						
 					}
 					j++;					
-					
 				}				
 			}
-					
-//			for(Losowanie los : wynikiLista) {
-//				System.out.println(los);
-//			}			
 			
-			
+			wskazanyPoNumerze(wynikiLista);
+			najrzadziejWystepujaceLiczby(wynikiLista);
+						
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
-		
-		//wyniki losowanie wskazanego po numerze
+		}
+	}
+	
+	
+	public static void wskazanyPoNumerze(List<Losowanie> wynikiLista) {
 		
 		System.out.println("Wskaz numer losowania: ");		
 		Scanner pobierz = new Scanner(System.in);		
@@ -69,9 +69,43 @@ public class MainClass {
 		System.out.println("Wynik losowania wskazanego po numerze: ");
 		losPoWskazanymNumerze.forEach(System.out::println);
 		
-		//wska¿ najrzadziej wystêpuj¹cych 6 liczb (mo¿liwe, ¿e niektóre wyst¹pi³y 0 razy)
+	}
+	
+	public static void najrzadziejWystepujaceLiczby(List<Losowanie> wynikiLista) {
 		
-		//do poprawy, dziala ale troche na okolo ???
+		TreeMap<Integer, Integer> map = new TreeMap<>();
+        for(int i = 1; i < 50; i++)
+        	map.put(i, 0);
+                
+        for (Losowanie los: wynikiLista) {
+        	ArrayList<Integer> temp = los.getLiczby();
+            for(int i = 0; i < temp.size(); i++){
+                map.put(temp.get(i), map.get(temp.get(i)) + 1);
+            }
+        }
+        
+        int klucz = 0;		
+		while(map.size()>6) {
+			
+			int maxValueInMap=(Collections.max(map.values()));
+	        for (Entry<Integer, Integer> entry : map.entrySet()) {  
+	            if (entry.getValue()==maxValueInMap) {
+	                klucz = entry.getKey();
+	            }
+	        }	        
+		    map.remove(klucz);		
+		}
+		
+		List<Integer> listOfMin = map.entrySet().stream()	            
+	            .map(Map.Entry::getKey)
+	            .collect(Collectors.toList());
+		
+		System.out.println("Najrzadziej wystêpuj¹cych 6 liczb: ");
+		listOfMin.forEach(System.out::println);
+		
+		
+		////////////xd
+		/*
 		int[] tab = new int[50];
 		for(int p=0; p<50; p++) {
 			tab[p]=0;
@@ -95,30 +129,9 @@ public class MainClass {
 			ile++;
 		}
 		
-		//System.out.println(map);
+		//System.out.println(map);		
+		*/
 		
-		int klucz = 0;
-		
-		while(map.size()>6) {
-		
-			int maxValueInMap=(Collections.max(map.values()));
-	        for (Entry<Integer, Integer> entry : map.entrySet()) {  
-	            if (entry.getValue()==maxValueInMap) {
-	                klucz = entry.getKey();
-	            }
-	        }
-	        
-		    map.remove(klucz);		
-		}
-		
-		List<Integer> listOfMin = map.entrySet()
-	            .stream()	            
-	            .map(Map.Entry::getKey)
-	            .collect(Collectors.toList());
-		
-		System.out.println("Najrzadziej wystêpuj¹cych 6 liczb: ");
-		listOfMin.forEach(System.out::println);
-				
 		
 	}
 
