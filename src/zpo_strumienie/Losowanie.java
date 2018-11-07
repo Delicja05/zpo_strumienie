@@ -1,7 +1,10 @@
 package zpo_strumienie;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-public class Losowanie {
+public class Losowanie implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	int numer;
 	String data;
