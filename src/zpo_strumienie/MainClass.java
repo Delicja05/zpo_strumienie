@@ -40,31 +40,31 @@ public class MainClass {
 		try {
 			wynikiLista = new ArrayList<Losowanie>();		
 		
-			wczytajZPliku(wynikiLista);		//+
+			wczytajZPliku(wynikiLista);
 			
-			wskazanyPoNumerze(wynikiLista);		//+
-			najrzadziejWystepujaceLiczby(wynikiLista);		//+
+			wskazanyPoNumerze(wynikiLista);
+			najrzadziejWystepujaceLiczby(wynikiLista);
 			
-			plikBinarnyZapis(wynikiLista);		//+/-
+			//////// zapisy do pliku ////////
 			
+			plikBinarnyZapis(wynikiLista);  // tworzy plikBinarny.data
+			//plikBinarnyOdczyt("txt/plikBinarny.data");
+						
+			plikBinarnyDeflater("txt/plikBinarny.data"); //kompresuje plikBinarny.data
+			plikBinarnyInflater("txt/plikBinarnySkompresowany.data"); //dekompresuje plik i tworzy plikBinarny2.data
+			//plikBinarnyOdczyt("txt/plikBinarny2.data");
 			
-			plikBinarnySkompresowanyZapis();		//+/-
-			
-			
-			
-			plikCSVZapis(wynikiLista);	//+
-			//plikCSVOdczyt(wynikiLista);	//+
+			plikCSVZapis(wynikiLista);  // tworzy plikCSV.csv
+			//plikCSVOdczyt("txt/plikCSV.csv");
 									
-			plikObiektowyZapis(wynikiLista);		//+
-			//plikObiektowyOdczyt(wynikiLista);		//+
+			plikObiektowyZapis(wynikiLista);  // tworzy plikObiektowy.bin
+			//plikObiektowyOdczyt("txt/plikObiektowy.bin");
 			
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-	
-		
+				
 	}
 	
 	
@@ -100,9 +100,7 @@ public class MainClass {
 			e.printStackTrace();
 		} catch (ParseException e) {
 			e.printStackTrace();
-		}
-		
-		
+		}		
 	}	
 	
 	public static void wskazanyPoNumerze(List<Losowanie> wynikiLista) {
@@ -157,82 +155,102 @@ public class MainClass {
 		
 	}
 	
-//	static byte[] toBytes(long val, int bufferSize)	{
-//	    byte[] result = new byte[bufferSize];
-//	    for(int i = bufferSize - 1; i >= 0; i--) {
-//	        result[i] = (byte) (val /*>> 0*/);
-//	        val = (val >> 8);
-//	    }
-//	    return result;
-//	}
 	
-	public static void plikBinarnyZapis(List<Losowanie> wynikiLista) throws ParseException {
+	public static void plikBinarnyZapis(List<Losowanie> wynikiLista) throws ParseException, NullPointerException {
 		
-		try(DataOutputStream out = new DataOutputStream(new FileOutputStream("txt/plik1.bin"))) { ///jakie rozszerzenie ??
-			
-			short nr = 0;
-			Timestamp dat;
-			//byte[] bytes = null;// = new byte[6];
-			
-			//ArrayList<Integer> binarnie = new ArrayList<Integer>();
-			
-			for(Losowanie los1 : wynikiLista) {
-				nr = (short)los1.getNumer();				
-				out.writeShort(nr);
-				out.writeChars("\t");				
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		ArrayList<Integer> licz = new ArrayList<Integer>();
+		byte[] result = new byte[6];
+		Timestamp dat;	
+		Date parsedDate;		
+		
+		try(DataOutputStream out = new DataOutputStream(new FileOutputStream("txt/plikBinarny.data"))) {
+								
+			for(Losowanie losowanie : wynikiLista) {								
+				out.writeShort((short)losowanie.getNumer());							
 				
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-			    Date parsedDate = dateFormat.parse(los1.getData());
+				parsedDate = dateFormat.parse(losowanie.getData());
 			    dat = new Timestamp(parsedDate.getTime());
 			    out.writeLong(dat.getTime());
-			    out.writeChars("\n");
-			   // System.out.println(dat.getTime());
-			    			      
-			    /*
-			    /////liczby - tablica 6 bajtow ?????
-			       
-			    ArrayList<Integer> licz = new ArrayList<Integer>();			   
-			    licz = los1.getLiczby();			    
-			    bytes =	toBytes(licz.get(1)*256*256*256*256 + licz.get(2)*256*256*256 + licz.get(3)*256*256 + licz.get(4)*256 + licz.get(5), 6);
-			    System.out.println(bytes[5]);
+			    			   			    			   
+			    licz = losowanie.getLiczby();
 			    
-	           ///////
-	           // System.out.println(BigInteger.valueOf(15).toByteArray().toString());
-			    System.out.println(String.valueOf(15));
-			    bytes =	toBytes(4*256*256*256, 6);
-			    bytes =	toBytes(8*256*256+3*256+4, 6);
-			    //System.out.println(bytes); //smieci
-			    System.out.println(Arrays.toString(bytes));
-			    
-			    System.out.println(bytes[5]);
-			     ////////
-			    */			
-			}	
-           
-            out.close();
-            
-           
+			    try{			    	
+			    	for(int j = 0; j < licz.size(); j++) {
+			    		result[j] = licz.get(j).byteValue();
+		    		}
+			    }catch (Exception e) {
+			    	System.out.println(e.getMessage());
+		    		break;
+				}
+			    			    
+			    out.write(result);		    	
+			}
+			
+            out.close();                       
        } catch(IOException ioe) {
             System.out.println("Error!");
        }
 		
 	}
 	
-	public static void plikBinarnySkompresowanyZapis() throws Exception {
+	public static void plikBinarnyOdczyt(String nazwa) throws ParseException, NullPointerException, FileNotFoundException, IOException {
 		
-		FileInputStream fis = new FileInputStream("txt/plik1.bin"); ///jakie rozszerzenie ??
- 		FileOutputStream fos = new FileOutputStream("txt/plik2.txt"); ///jakie rozszerzenie ??
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
+		Date date;
+		long time;
+		Byte b;
+		int nr;
+		int j=0;
+		
+		try(DataInputStream in = new DataInputStream(new FileInputStream(nazwa))){
+			
+			while(true) {
+				
+				try {
+					nr = (int)in.readUnsignedShort();
+	        	}catch (Exception e) {
+	        		break;
+				}
+								
+				time = in.readLong();
+				date = new Date(time);
+				
+				wyniki.add(new Losowanie(nr, format.format(date)));
+				
+				for(int i=0; i<6; i++) {
+					
+					b = in.readByte();					
+					wyniki.get(j).dodajLiczbe(b.intValue());
+				}
+				
+		        j++;
+			} 
+			
+		}
+		
+		for(Losowanie los : wyniki) {
+			System.out.println(los);
+        }
+				
+	}	
+	
+	public static void plikBinarnyDeflater(String nazwa) throws Exception {
+		
+		FileInputStream fis = new FileInputStream(nazwa); 
+ 		FileOutputStream fos = new FileOutputStream("txt/plikBinarnySkompresowany.data");
  		DeflaterOutputStream dos = new DeflaterOutputStream(fos);
 
  		doCopy(fis, dos);
  			
 	}
-	//??
-	public static void plikBinarnySkompresowanyOdczyt() throws Exception {
+	
+	public static void plikBinarnyInflater(String nazwa) throws Exception {
 		
-		FileInputStream fis2 = new FileInputStream("txt/plik2.txt");
+		FileInputStream fis2 = new FileInputStream(nazwa);
 		InflaterInputStream iis = new InflaterInputStream(fis2);
-		FileOutputStream fos2 = new FileOutputStream("txt/plik22.bin");
+		FileOutputStream fos2 = new FileOutputStream("txt/plikBinarny2.data");
 
 		doCopy(iis, fos2);
  			
@@ -249,9 +267,11 @@ public class MainClass {
 	
 	public static void plikCSVZapis(List<Losowanie> wynikiLista) throws IOException, ParseException {
 				
+		byte[] data;
 		String str;
 		ArrayList<Integer> licz;
-		try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream("txt/plik3.csv"))) {
+		
+		try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream("txt/plikCSV.csv"))) {
 			
 			for(Losowanie los : wynikiLista) {
 				
@@ -264,7 +284,7 @@ public class MainClass {
 			    
 			    str = str + "\n";
 			    
-			    byte[] data = str.getBytes("UTF-8");
+			    data = str.getBytes("UTF-8");
 			    dataOutputStream.write(data);			
 			}
 			
@@ -274,7 +294,7 @@ public class MainClass {
        }		
 	}
 	
-	public static void plikCSVOdczyt(List<Losowanie> wynikiLista) throws FileNotFoundException, IOException {
+	public static void plikCSVOdczyt(String nazwa) throws FileNotFoundException, IOException {
 		
 		String str1;
 		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
@@ -282,7 +302,7 @@ public class MainClass {
 		int j=0;
 		int k=2;
 		
-		try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream("txt/plik3.csv"))){
+		try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(nazwa))){
 			
 			BufferedReader bReader = new BufferedReader(new InputStreamReader(dataInputStream, "UTF-8"));
 			
@@ -300,31 +320,30 @@ public class MainClass {
 			}
 		}
 		
-		for(Losowanie los5 : wyniki) {
-			System.out.println(los5);
+		for(Losowanie los : wyniki) {
+			System.out.println(los);
         }
 		
 	}
 	
 	public static void plikObiektowyZapis(List<Losowanie> wynikiLista) throws FileNotFoundException, IOException {
 		
-		try (ObjectOutputStream objOutputStream = new ObjectOutputStream(new FileOutputStream("txt/plik4.bin"))) {
+		try (ObjectOutputStream objOutputStream = new ObjectOutputStream(new FileOutputStream("txt/plikObiektowy.bin"))) {
 			
 			for(Losowanie los : wynikiLista) {
 				objOutputStream.writeObject(los);
             }
 			objOutputStream.close();	        
-		}
-			
+		}			
 	}
 	
-	public static void plikObiektowyOdczyt(List<Losowanie> wynikiLista) throws FileNotFoundException, IOException {
+	public static void plikObiektowyOdczyt(String nazwa) throws FileNotFoundException, IOException {
 		
 		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
 		ArrayList<Integer> licz = new ArrayList<Integer>();
 		int j=0;
 		
-		try (ObjectInputStream objInputStream = new ObjectInputStream(new FileInputStream("txt/plik4.bin"))) {
+		try (ObjectInputStream objInputStream = new ObjectInputStream(new FileInputStream(nazwa))) {
 			
 	       	Losowanie losowanie ;	
 	        while(true) {
@@ -346,6 +365,7 @@ public class MainClass {
 		
 		 for(Losowanie los : wyniki) {
 				System.out.println(los);
-	        }	
+	     }	
 	}
+	
 }

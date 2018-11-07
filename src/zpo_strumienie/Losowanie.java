@@ -2,6 +2,7 @@ package zpo_strumienie;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
 public class Losowanie implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
@@ -13,10 +14,8 @@ public class Losowanie implements Serializable{
 	public Losowanie(int n,String d){
 		this.numer = n;
 		this.data = d;
-		this.liczby = new ArrayList<Integer>();
-	
-	}
-	
+		this.liczby = new ArrayList<Integer>();	
+	}	
 
 	public void dodajLiczbe(Integer liczba) {		
 		this.liczby.add(liczba);		
@@ -25,8 +24,7 @@ public class Losowanie implements Serializable{
 	@Override
 	public String toString() {
 		
-		return "Numer: "+numer+" Data: " +data+ " Liczby: "+liczby+" \n";
-		
+		return "Numer: "+numer+" Data: " +data+ " Liczby: "+liczby+" \n";		
 	}
 	
 	public int getNumer() {
@@ -40,7 +38,4 @@ public class Losowanie implements Serializable{
 	public ArrayList<Integer> getLiczby() {
 		return liczby;
 	}
-	
-	
-
 }
