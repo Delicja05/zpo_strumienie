@@ -47,18 +47,18 @@ public class MainClass {
 			
 			//////// zapisy do pliku ////////
 			
-			plikBinarnyZapis(wynikiLista);  // tworzy plikBinarny.data
-			//plikBinarnyOdczyt("txt/plikBinarny.data");
+			plikBinarnyZapis(wynikiLista,"txt/plikBinarny.txt");  // tworzy plikBinarny.data
+			//plikBinarnyOdczyt("txt/plikBinarny.txt");
 						
-			plikBinarnyDeflater("txt/plikBinarny.data"); //kompresuje plikBinarny.data
-			plikBinarnyInflater("txt/plikBinarnySkompresowany.data"); //dekompresuje plik i tworzy plikBinarny2.data
-			//plikBinarnyOdczyt("txt/plikBinarny2.data");
+			plikBinarnyDeflater("txt/plikBinarny.txt", "txt/plikBinarnySkompresowany.dfl"); //kompresuje plikBinarny.data
+			plikBinarnyInflater("txt/plikBinarnySkompresowany.dfl", "txt/plikBinarny2.txt"); //dekompresuje plik i tworzy plikBinarny2.txt
+			//plikBinarnyOdczyt("txt/plikBinarny2.txt");
 			
-			plikCSVZapis(wynikiLista);  // tworzy plikCSV.csv
+			plikCSVZapis(wynikiLista, "txt/plikCSV.csv");  // tworzy plikCSV.csv
 			//plikCSVOdczyt("txt/plikCSV.csv");
 									
-			plikObiektowyZapis(wynikiLista);  // tworzy plikObiektowy.bin
-			//plikObiektowyOdczyt("txt/plikObiektowy.bin");
+			plikObiektowyZapis(wynikiLista, "txt/plikObiektowy.txt");  // tworzy plikObiektowy.bin
+			//plikObiektowyOdczyt("txt/plikObiektowy.txt");
 			
 			
 		} catch (IOException e) {
@@ -156,7 +156,7 @@ public class MainClass {
 	}
 	
 	
-	public static void plikBinarnyZapis(List<Losowanie> wynikiLista) throws ParseException, NullPointerException {
+	public static void plikBinarnyZapis(List<Losowanie> wynikiLista, String plik) throws ParseException, NullPointerException {
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		ArrayList<Integer> licz = new ArrayList<Integer>();
@@ -164,7 +164,7 @@ public class MainClass {
 		Timestamp dat;	
 		Date parsedDate;		
 		
-		try(DataOutputStream out = new DataOutputStream(new FileOutputStream("txt/plikBinarny.data"))) {
+		try(DataOutputStream out = new DataOutputStream(new FileOutputStream(plik))) {
 								
 			for(Losowanie losowanie : wynikiLista) {								
 				out.writeShort((short)losowanie.getNumer());							
@@ -194,7 +194,7 @@ public class MainClass {
 		
 	}
 	
-	public static void plikBinarnyOdczyt(String nazwa) throws ParseException, NullPointerException, FileNotFoundException, IOException {
+	public static ArrayList<Losowanie> plikBinarnyOdczyt(String nazwa) throws ParseException, NullPointerException, FileNotFoundException, IOException {
 		
 		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
 		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
@@ -233,24 +233,26 @@ public class MainClass {
 		for(Losowanie los : wyniki) {
 			System.out.println(los);
         }
+		
+		return wyniki;
 				
 	}	
 	
-	public static void plikBinarnyDeflater(String nazwa) throws Exception {
+	public static void plikBinarnyDeflater(String nazwa, String nazwa2) throws Exception {
 		
 		FileInputStream fis = new FileInputStream(nazwa); 
- 		FileOutputStream fos = new FileOutputStream("txt/plikBinarnySkompresowany.data");
+ 		FileOutputStream fos = new FileOutputStream(nazwa2);
  		DeflaterOutputStream dos = new DeflaterOutputStream(fos);
 
  		doCopy(fis, dos);
  			
 	}
 	
-	public static void plikBinarnyInflater(String nazwa) throws Exception {
+	public static void plikBinarnyInflater(String nazwa, String nazwa2) throws Exception {
 		
 		FileInputStream fis2 = new FileInputStream(nazwa);
 		InflaterInputStream iis = new InflaterInputStream(fis2);
-		FileOutputStream fos2 = new FileOutputStream("txt/plikBinarny2.data");
+		FileOutputStream fos2 = new FileOutputStream(nazwa2);
 
 		doCopy(iis, fos2);
  			
@@ -265,13 +267,13 @@ public class MainClass {
 		is.close();
 	}
 	
-	public static void plikCSVZapis(List<Losowanie> wynikiLista) throws IOException, ParseException {
+	public static void plikCSVZapis(List<Losowanie> wynikiLista, String plik) throws IOException, ParseException {
 				
 		byte[] data;
 		String str;
 		ArrayList<Integer> licz;
 		
-		try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream("txt/plikCSV.csv"))) {
+		try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(plik))) {
 			
 			for(Losowanie los : wynikiLista) {
 				
@@ -294,7 +296,7 @@ public class MainClass {
        }		
 	}
 	
-	public static void plikCSVOdczyt(String nazwa) throws FileNotFoundException, IOException {
+	public static ArrayList<Losowanie> plikCSVOdczyt(String nazwa) throws FileNotFoundException, IOException {
 		
 		String str1;
 		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
@@ -323,12 +325,13 @@ public class MainClass {
 		for(Losowanie los : wyniki) {
 			System.out.println(los);
         }
+		return wyniki;
 		
 	}
 	
-	public static void plikObiektowyZapis(List<Losowanie> wynikiLista) throws FileNotFoundException, IOException {
+	public static void plikObiektowyZapis(List<Losowanie> wynikiLista, String plik) throws FileNotFoundException, IOException {
 		
-		try (ObjectOutputStream objOutputStream = new ObjectOutputStream(new FileOutputStream("txt/plikObiektowy.bin"))) {
+		try (ObjectOutputStream objOutputStream = new ObjectOutputStream(new FileOutputStream(plik))) {
 			
 			for(Losowanie los : wynikiLista) {
 				objOutputStream.writeObject(los);
@@ -337,7 +340,7 @@ public class MainClass {
 		}			
 	}
 	
-	public static void plikObiektowyOdczyt(String nazwa) throws FileNotFoundException, IOException {
+	public static ArrayList<Losowanie> plikObiektowyOdczyt(String nazwa) throws FileNotFoundException, IOException {
 		
 		ArrayList<Losowanie> wyniki = new ArrayList<Losowanie>();
 		ArrayList<Integer> licz = new ArrayList<Integer>();
@@ -365,7 +368,9 @@ public class MainClass {
 		
 		 for(Losowanie los : wyniki) {
 				System.out.println(los);
-	     }	
+	     }
+		 
+		 return wyniki;
 	}
 	
 }
